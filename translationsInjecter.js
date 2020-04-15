@@ -101,10 +101,25 @@ export default function inject(contents, origTranslations) {
     keys.add(key)
   }
 
+  function findEmptyChild(entry) {
+    for (const k in entry) {
+      if (typeof entry[k] === `string`) {
+        if (!entry[k]) {
+          return true
+        }
+      } else {
+        return findEmptyChild(entry[k])
+      }
+    }
+  }
+
   function translation(key, languageId) {
     const entry = translations[languageId][key]
 
-    if (!entry.text || !entry.text.trim()) {
+    const isLiteral = typeof entry.text === `string`
+    const hasEmpty = isLiteral ? !entry.text : findEmptyChild(entry)
+
+    if (hasEmpty) {
       warnings.push(`Missing translation: ${key}.${languageId}`)
     }
 
