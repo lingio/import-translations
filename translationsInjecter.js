@@ -128,6 +128,11 @@ export default function inject(contents, origTranslations) {
 
   function translationsFor(key) {
     const ret = {}
+    if (!translations.en.hasOwnProperty(key)) {
+      throw new Error(
+        `The key '${key}' was requested, but there is no such row in the document`
+      )
+    }
     languageIds.forEach((languageId) => {
       ret[languageId] = translation(key, languageId)
     })
@@ -137,11 +142,20 @@ export default function inject(contents, origTranslations) {
   // kill any existing translate functions. NOTE: This removes everything from translations to end-of-page
   contents = contents.replace(/\nconst translations = {(.|\n)*$/, ``)
 
-  if (keys.size > 0) {
+  const injectAvailable = keys.has(`availableLanguages`)
+  keys.delete(`availableLanguages`)
+
+  if (keys.size > 0 || injectAvailable) {
     const translations = {}
+
     for (const k of [...keys].sort()) {
       translations[k] = translationsFor(k)
     }
+
+    if (injectAvailable) {
+      translations.availableLanguages = Object.keys(languages)
+    }
+
     contents = `${contents}\n\nconst translations = ${JSON.stringify(
       translations
     )}`
