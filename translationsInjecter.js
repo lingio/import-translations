@@ -167,7 +167,9 @@ export default function inject(contents, origTranslations, translationsFile) {
 
   return {
     output: contents,
-    translations: `export default translations = ${stringify(t)}`,
+    translations: `// prettier-ignore\nexport default translations = ${stringify(
+      t
+    )}`,
     warnings,
     hasContent,
   }

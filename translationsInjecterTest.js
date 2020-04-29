@@ -30,12 +30,14 @@ try {
   /* === TEST === */
   console.log("==== It should inject import tag and provide translations")
   let input = `translations.simple.en`
-  let expected = `export default translations = ${stringify({
-    simple: {
-      en: { text: `Simple`, rtl: false, languageId: `en` },
-      sv: { text: `Enkelt`, rtl: false, languageId: `sv` },
-    },
-  })}`
+  let expected = `// prettier-ignore\nexport default translations = ${stringify(
+    {
+      simple: {
+        en: { text: `Simple`, rtl: false, languageId: `en` },
+        sv: { text: `Enkelt`, rtl: false, languageId: `sv` },
+      },
+    }
+  )}`
 
   assert.equal(inject(input, translations).translations, expected)
   assert.equal(
@@ -46,7 +48,7 @@ try {
   /* === TEST === */
   console.log("==== It should create new objects with params")
   input = `translations.animal.en.duck`
-  expected = `export default translations = ${stringify({
+  expected = `// prettier-ignore\nexport default translations = ${stringify({
     animal: {
       en: {
         duck: { text: `A duck`, rtl: false, languageId: `en` },
@@ -64,7 +66,7 @@ try {
   /* === TEST === */
   console.log("==== It should use other language if specified with use(...)")
   input = `translations.onlyEn.sv`
-  expected = `export default translations = ${stringify({
+  expected = `// prettier-ignore\nexport default translations = ${stringify({
     onlyEn: {
       en: { text: `This is English`, rtl: false, languageId: `en` },
       sv: { text: `This is English`, rtl: false, languageId: `en` },
