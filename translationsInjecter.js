@@ -143,7 +143,7 @@ export default function inject(contents, origTranslations, translationsFile) {
 
   // kill any existing translate imports.
   contents = contents.replace(
-    /import translations from "\.\/translations.js"\n/,
+    /import translations from "\.\/.*\.translations.js"\n/,
     ``
   )
 
