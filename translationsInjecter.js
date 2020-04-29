@@ -1,3 +1,5 @@
+import stringify from "./stringify.js"
+
 const languages = {
   en: { rtl: false },
   sv: { rtl: false },
@@ -15,7 +17,7 @@ const languages = {
   th: { rtl: false },
 }
 
-export default function inject(contents, origTranslations) {
+export default function inject(contents, origTranslations, translationsFile) {
   const warnings = []
   const languageIds = Object.keys(origTranslations)
 
@@ -139,28 +141,37 @@ export default function inject(contents, origTranslations) {
   // kill any existing translate functions. NOTE: This removes everything from translations to end-of-page
   contents = contents.replace(/\nconst translations = {(.|\n)*$/, ``)
 
+  // kill any existing translate imports.
+  contents = contents.replace(
+    /import translations from "\.\/.*\.translations.js"\n/,
+    ``
+  )
+
   const injectAvailable = keys.has(`availableLanguages`)
   keys.delete(`availableLanguages`)
 
-  if (keys.size > 0 || injectAvailable) {
-    const translations = {}
+  const hasContent = keys.size > 0 || injectAvailable
+  const t = {}
 
+  if (hasContent) {
     for (const k of [...keys].sort()) {
-      translations[k] = translationsFor(k)
+      t[k] = translationsFor(k)
     }
 
     if (injectAvailable) {
-      translations.availableLanguages = Object.keys(languages)
+      t.availableLanguages = Object.keys(languages)
     }
 
-    contents = `${contents}\n\nconst translations = ${JSON.stringify(
-      translations
-    )}`
+    contents = `import translations from "./${translationsFile}"\n${contents}`
   }
 
   return {
     output: contents,
+    translations: `// prettier-ignore\nexport default translations = ${stringify(
+      t
+    )}`,
     warnings,
+    hasContent,
   }
 }
 
