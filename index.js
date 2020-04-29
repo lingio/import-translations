@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { writeFileSync, readFileSync } from "fs"
+import { writeFileSync, readFileSync, unlinkSync } from "fs"
 import { exec } from "child_process"
 
 import { getTranslations, getJavascriptFiles } from "./translationsImporter.js"
@@ -16,18 +16,27 @@ async function run() {
   const allWarnings = []
 
   for (const file of getJavascriptFiles(`.`)) {
+    const translationsFile = file.replace(/\.js$/, `.translations.js`)
+    const translationsFileRelative = translationsFile.slice(
+      translationsFile.lastIndexOf(`/`) + 1
+    )
+
     const contents = readFileSync(file, `utf-8`)
-    const { output, warnings } = inject(contents, translations)
-    warnings.forEach((w) => {
+    const result = inject(contents, translations, translationsFileRelative)
+    result.warnings.forEach((w) => {
       allWarnings.push(`${w}\t\t${file}`)
     })
 
-    if (output !== contents) {
-      writeFileSync(file, output, `utf-8`)
+    writeFileSync(file, result.output, `utf-8`)
 
-      await new Promise((res) => {
-        exec(`prettier --write '${file}'`, res)
-      })
+    if (result.hasContent) {
+      writeFileSync(translationsFile, result.translations, `utf-8`)
+    } else {
+      try {
+        unlinkSync(translationsFile)
+      } catch (e) {
+        // ignore issues removing the file
+      }
     }
   }
 

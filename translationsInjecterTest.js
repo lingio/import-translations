@@ -1,7 +1,9 @@
-// simple unit test for translations injecter, just run it with node v13 or later// Using `supervisor` is recommmended
+// simple unit test for translations injecter, just run it with node v13 or later
+// Using `supervisor -n exit translationsInjecterTest.js` is recommmended
 
 import assert from "assert"
 import inject from "./translationsInjecter.js"
+import stringify from "./stringify.js"
 
 try {
   const translations = {
@@ -26,50 +28,50 @@ try {
   }
 
   /* === TEST === */
-  console.log("==== It should only inject needed keys")
+  console.log("==== It should inject import tag and provide translations")
   let input = `translations.simple.en`
-  let expected = `translations.simple.en\n\nconst translations = ${JSON.stringify(
-    {
-      simple: {
-        en: { text: `Simple`, rtl: false, languageId: `en` },
-        sv: { text: `Enkelt`, rtl: false, languageId: `sv` },
-      },
-    }
-  )}`
+  let expected = `export default translations = ${stringify({
+    simple: {
+      en: { text: `Simple`, rtl: false, languageId: `en` },
+      sv: { text: `Enkelt`, rtl: false, languageId: `sv` },
+    },
+  })}`
 
-  assert.equal(inject(input, translations).output, expected)
+  assert.equal(inject(input, translations).translations, expected)
+  assert.equal(
+    inject(input, translations, `test.translations.js`).output,
+    `import translations from "./test.translations.js"\ntranslations.simple.en`
+  )
 
   /* === TEST === */
   console.log("==== It should create new objects with params")
   input = `translations.animal.en.duck`
-  expected = `translations.animal.en.duck\n\nconst translations = ${JSON.stringify(
-    {
-      animal: {
-        en: {
-          duck: { text: `A duck`, rtl: false, languageId: `en` },
-          donkey: { text: `A donkey`, rtl: false, languageId: `en` },
-        },
-        sv: {
-          duck: { text: `En anka`, rtl: false, languageId: `sv` },
-          donkey: { text: `En åsna`, rtl: false, languageId: `sv` },
-        },
+  expected = `export default translations = ${stringify({
+    animal: {
+      en: {
+        duck: { text: `A duck`, rtl: false, languageId: `en` },
+        donkey: { text: `A donkey`, rtl: false, languageId: `en` },
       },
-    }
-  )}`
+      sv: {
+        duck: { text: `En anka`, rtl: false, languageId: `sv` },
+        donkey: { text: `En åsna`, rtl: false, languageId: `sv` },
+      },
+    },
+  })}`
 
-  assert.equal(inject(input, translations).output, expected)
+  assert.equal(inject(input, translations).translations, expected)
 
   /* === TEST === */
   console.log("==== It should use other language if specified with use(...)")
   input = `translations.onlyEn.sv`
-  expected = `translations.onlyEn.sv\n\nconst translations = ${JSON.stringify({
+  expected = `export default translations = ${stringify({
     onlyEn: {
       en: { text: `This is English`, rtl: false, languageId: `en` },
       sv: { text: `This is English`, rtl: false, languageId: `en` },
     },
   })}`
 
-  assert.equal(inject(input, translations).output, expected)
+  assert.equal(inject(input, translations).translations, expected)
 
   /* === TEST === */
   console.log("==== It should warn about missing translations")
