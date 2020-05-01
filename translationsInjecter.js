@@ -90,7 +90,7 @@ export default function inject(contents, origTranslations, translationsFile) {
     }
   }
 
-  const callsRegex = /translations\.([^.[]+)(\.([^.(]+)|\[[^\]]+\])/gm
+  const callsRegex = /translations\.([a-z][a-zA-Z]*)(\.([^.(]+)|\[[^\]]+\])/gm
 
   const keys = new Set()
 
@@ -128,13 +128,21 @@ export default function inject(contents, origTranslations, translationsFile) {
   function translationsFor(key) {
     const ret = {}
     if (!translations.en.hasOwnProperty(key)) {
-      throw new Error(
+      warnings.push(
         `The key '${key}' was requested, but there is no such row in the document`
       )
+      languageIds.forEach((languageId) => {
+        ret[languageId] = {
+          languageId: `en`,
+          rtl: false,
+          text: `!!! no translation !!!]`,
+        }
+      })
+    } else {
+      languageIds.forEach((languageId) => {
+        ret[languageId] = translation(key, languageId)
+      })
     }
-    languageIds.forEach((languageId) => {
-      ret[languageId] = translation(key, languageId)
-    })
     return ret
   }
 

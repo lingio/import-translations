@@ -24,7 +24,7 @@ async function run() {
     const contents = readFileSync(file, `utf-8`)
     const result = inject(contents, translations, translationsFileRelative)
     result.warnings.forEach((w) => {
-      allWarnings.push(`${w}\t\t${file}`)
+      allWarnings.push(`${file}\t\t${w}`)
     })
 
     writeFileSync(file, result.output, `utf-8`)
