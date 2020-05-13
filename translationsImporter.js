@@ -1,5 +1,11 @@
 import https from "https"
-import { writeFileSync, readdirSync, lstatSync, readFileSync } from "fs"
+import {
+  writeFileSync,
+  readdirSync,
+  lstatSync,
+  readFileSync,
+  statSync,
+} from "fs"
 import pathTools from "path"
 
 export async function getTranslations() {
@@ -47,14 +53,20 @@ export async function getTranslations() {
   return translations
 }
 
-export function* getJavascriptFiles(dir) {
-  for (const file of readdirSync(dir)) {
-    const path = pathTools.join(dir, file)
-    const stat = lstatSync(path)
-    if (stat.isDirectory()) {
-      yield* getJavascriptFiles(path) //recurse
-    } else if (path.endsWith(`.js`)) {
-      yield path
+export function* getJavascriptFiles(dirOrFile) {
+  if (statSync(dirOrFile).isFile()) {
+    const file = dirOrFile
+    yield file
+  } else {
+    const dir = dirOrFile
+    for (const file of readdirSync(dir)) {
+      const path = pathTools.join(dir, file)
+      const stat = lstatSync(path)
+      if (stat.isDirectory()) {
+        yield* getJavascriptFiles(path) //recurse
+      } else if (path.endsWith(`.js`)) {
+        yield path
+      }
     }
   }
 }
