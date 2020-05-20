@@ -1,6 +1,6 @@
 const processLine = (input) => input
   .replace(/"([a-zA-Z]+)":/g, `$1:`) // remove quotes on keys
-  .replace(/"(.*)"/g, `\`$1\``) // replace outermost double quotes with backticks
+  .replace(/: "(.*)"/g, `: \`$1\``) // replace outermost double quotes with backticks
 
 export default function stringify(obj) {
   return (
