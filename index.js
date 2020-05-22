@@ -43,7 +43,9 @@ async function run() {
       allWarnings.push(`${file}\t\t${w}`)
     })
 
-    writeFileSync(file, result.output, `utf-8`)
+    if (contents !== result.output) {
+      writeFileSync(file, result.output, `utf-8`)
+    }
 
     if (result.hasContent) {
       writeFileSync(translationsFile, result.translations, `utf-8`)
