@@ -14,6 +14,7 @@ try {
       "car[tesla,expensive]": "An expensive tesla car",
       earnedPoints: `You've earned {0} points!`,
       onlyEn: `This is English`,
+      quoted: `This is a "quoted string"`,
       lackingEnglish: ``,
     },
     sv: {
@@ -23,6 +24,7 @@ try {
       "car[tesla,expensive]": "En dyr tesla bil",
       earnedPoints: `Du har tjänat in {0} poäng!`,
       onlyEn: `use(en)`,
+      quoted: `Den här strängen är "inkvoterad"`,
       lackingEnglish: `got Swedish though`,
     },
   }
@@ -83,6 +85,18 @@ try {
   /* === TEST === */
   console.log("==== It should NOT warn about missing UNUSED translations")
   assert.deepEqual(inject(`translations.simple.en`, translations).warnings, [])
+
+  /* === TEST === */
+  console.log("==== It should keep quotes in translated strings")
+  input = `translations.quoted.en`
+  expected = `// prettier-ignore
+export default Object.freeze({
+  quoted: {
+    en: Object.freeze({ text: \`This is a \\"quoted string\\"\`, rtl: false, languageId: \`en\` }),
+    sv: Object.freeze({ text: \`Den här strängen är \\"inkvoterad\\"\`, rtl: false, languageId: \`sv\` }),
+  }
+})`
+  assert.equal(inject(input, translations).translations, expected)
 
   console.log()
   console.log(`=== All tests successful ===`)
