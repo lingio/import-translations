@@ -11,16 +11,20 @@ import pathTools from "path"
 export async function getTranslations() {
   const translations = {}
 
-  const fetch = () =>
+  const fetch = (url = process.env.TRANSLATIONS_URL) =>
     new Promise((fetchRes) => {
-      https.get(process.env.TRANSLATIONS_URL, (res) => {
+      https.get(url, (res) => {
         res.setEncoding("utf8")
         let data = ""
         res.on("data", (chunk) => {
           data += chunk
         })
         res.on("end", () => {
-          fetchRes(data)
+          if (`${res.statusCode}`[0] === `3`) {
+            fetch(res.headers.location).then(fetchRes)
+          } else {
+            fetchRes(data)
+          }
         })
       })
     })
