@@ -74,3 +74,24 @@ export function* getJavascriptFiles(dirOrFile) {
     }
   }
 }
+
+export async function getTranslationsFile(forFile) {
+  const location1 = forFile.replace(/\.js$/, `.translations.js`)
+
+  const directory2 = forFile.replace(/\.js$/, ``)
+  const location2 = forFile.replace(/\.js$/, `/translations.js`)
+
+  if (dirExists(directory2)) {
+    return location2
+  } else {
+    return location1
+  }
+}
+
+function dirExists(path) {
+  try {
+    return statSync(path).isDirectory()
+  } catch (e) {
+    return false
+  }
+}

@@ -3,7 +3,11 @@
 import { writeFileSync, readFileSync, unlinkSync, realpathSync } from "fs"
 import { exec } from "child_process"
 
-import { getTranslations, getJavascriptFiles } from "./translationsImporter.js"
+import {
+  getTranslations,
+  getJavascriptFiles,
+  getTranslationsFile,
+} from "./translationsImporter.js"
 import inject from "./translationsInjecter.js"
 
 if (!process.env.TRANSLATIONS_URL) {
@@ -32,9 +36,9 @@ async function run() {
   const allWarnings = []
 
   for (const file of getJavascriptFiles(target)) {
-    const translationsFile = file.replace(/\.js$/, `.translations.js`)
+    const translationsFile = await getTranslationsFile(file)
     const translationsFileRelative = translationsFile.slice(
-      translationsFile.lastIndexOf(`/`) + 1
+      file.lastIndexOf(`/`) + 1
     )
 
     const contents = readFileSync(file, `utf-8`)
