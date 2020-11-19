@@ -16,6 +16,7 @@ try {
       onlyEn: `This is English`,
       quoted: `This is a "quoted string"`,
       lackingEnglish: ``,
+      un_der_sco_re: `Underscore`,
     },
     sv: {
       simple: "Enkelt",
@@ -26,6 +27,7 @@ try {
       onlyEn: `use(en)`,
       quoted: `Den här strängen är "inkvoterad"`,
       lackingEnglish: `got Swedish though`,
+      un_der_sco_re: `Understrykning`,
     },
   }
 
@@ -43,6 +45,22 @@ try {
   assert.equal(
     inject(input, translations, `test.translations.js`).output,
     `import translations from "./test.translations.js"\ntranslations.simple.en`
+  )
+
+  /* === TEST === */
+  console.log("==== It should support underscores in tags")
+  input = `translations.un_der_sco_re[language.id]`
+  expected = `// prettier-ignore\nexport default ${stringify({
+    "un_der_sco_re": {
+      en: { text: `Underscore`, rtl: false, languageId: `en` },
+      sv: { text: `Understrykning`, rtl: false, languageId: `sv` },
+    },
+  })}`
+
+  assert.equal(inject(input, translations).translations, expected)
+  assert.equal(
+    inject(input, translations, `test.translations.js`).output,
+    `import translations from "./test.translations.js"\ntranslations.un_der_sco_re[language.id]`
   )
 
   /* === TEST === */
