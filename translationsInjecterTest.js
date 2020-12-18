@@ -46,6 +46,14 @@ try {
   )
 
   /* === TEST === */
+  console.log("==== It should not duplicate import statements")
+  input = `import translations from "./test.translations.js"\nimport translations from "./test/translations.js"\n\ntranslations.simple.en`
+  assert.equal(
+    inject(input, translations, `test.translations.js`).output,
+    `import translations from "./test.translations.js"\n\ntranslations.simple.en`
+  )
+
+  /* === TEST === */
   console.log("==== It should create new objects with params")
   input = `translations.animal.en.duck`
   expected = `// prettier-ignore\nexport default ${stringify({
