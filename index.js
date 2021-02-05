@@ -32,7 +32,14 @@ try {
 }
 
 async function run() {
-  const translations = await getTranslations()
+  let translations
+  try {
+    translations = await getTranslations()
+  } catch (e) {
+    console.error(`Failed to load translations.`, e)
+    return
+  }
+
   const allWarnings = []
 
   for (const file of getJavascriptFiles(target)) {

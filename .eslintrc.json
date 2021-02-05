@@ -1,0 +1,20 @@
+{
+  "env": {
+    "es2020": true,
+    "browser": false
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "impliedStrict": true
+    }
+  },
+  "rules": {
+    "quotes": ["error", "backtick"],
+    "eqeqeq": "error",
+    "no-var": ["error"],
+    "no-console": ["warn", {
+      "allow": ["warn", "error", "debug"]
+    }]
+  }
+}
