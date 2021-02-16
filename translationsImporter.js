@@ -120,6 +120,10 @@ const getCellTextValue = (input) => {
         return line[`text:a`][0][`_`]
       }
 
+      if (line[`_`]) {
+        return line[`_`]
+      }
+
       return ``
     })
     .join(`\n`)
