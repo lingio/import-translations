@@ -175,22 +175,43 @@ const cleanDoc = (input) => {
   input = input[`table:table`][0]
   input = input[`table:table-row`]
 
-  const [columns, ...lines] = input.map((row) => {
+  const [columnNames, ...lines] = input.map((row) => {
     return row[`table:table-cell`].map(parseCell).flat()
   })
 
+  const idColumn = columnNames.indexOf(`id`)
+  const languageColumns = columnNames
+    .map((c, i) => {
+      // Ignore id column
+      if (i === idColumn) return false
+      if (!c) return false
+      // Ignore columns that starts with underscore, dot or Uppercase letter
+      const m1 = c.match(/(^_|^\.|^[A-Z])/)
+      if (m1) return false
+      // Find columns that look like a language code
+      const m2 = c.match(/^([a-z]{2,3}(\-[a-z]{2,3})?)/i)
+      if (!m2) return false
+      return c
+    })
+    .filter((c) => c)
+
   const translations = {}
 
-  lines.forEach(([id, _batch, _context, _examples, ...dynamicValues]) => {
-    const scopes = _context.split(` `)[0].split(`/`)
-    if (id.length < 1 || id[0] === `#`) {
+  lines.forEach((line) => {
+    const keyed = {}
+    columnNames.forEach((cn, i) => {
+      keyed[cn] = line[i]
+    })
+
+    const id = keyed[`id`]
+    if (!id || id.length < 1 || id[0] === `#`) {
       return
     }
 
-    dynamicValues.forEach((v, i) => {
-      const k = columns[i + 4]
+    languageColumns.forEach((k) => {
+      const v = keyed[k]
 
-      if (v.length < 1 || v === `...`) {
+      if (!v || v.length < 1 || v === `...`) {
         return
       }
 
@@ -219,9 +240,9 @@ export async function getTranslations() {
 
   const xmlParser = new xml2js.Parser()
   const parsedXml = await xmlParser.parseStringPromise(xmlData)
-  const cleanXml = cleanDoc(parsedXml)
 
-  return cleanXml
+  const output = cleanDoc(parsedXml)
+  return output
 }
 
 export function* getJavascriptFiles(dirOrFile) {
