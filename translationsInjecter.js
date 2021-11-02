@@ -13,6 +13,7 @@ const languages = {
   tr: { rtl: false },
   pl: { rtl: false },
   ru: { rtl: false },
+  ro: { rtl: false },
   uk: { rtl: false },
   th: { rtl: false },
 }
