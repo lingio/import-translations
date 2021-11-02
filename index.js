@@ -15,6 +15,10 @@ if (!process.env.TRANSLATIONS_URL) {
   process.exit(1)
 }
 
+process.on('uncaughtException', function (err) {
+  console.error(err.stack);
+});
+
 const [_bin, _file, targetRelative] = process.argv
 
 if (!targetRelative) {
