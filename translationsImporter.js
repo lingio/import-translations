@@ -11,23 +11,56 @@ import tmp from "tmp"
 import StreamZip from "node-stream-zip"
 import xml2js from "xml2js"
 
-const fetchDocument = (url) =>
-  new Promise((fetchRes) => {
-    https.get(url, (res) => {
-      res.setEncoding(`binary`)
-      let data = ``
-      res.on(`data`, (chunk) => {
-        data += chunk
+const fetchDocument = (url) => {
+  console.log(`Fetching ${url}`)
+  return new Promise((fetchRes) => {
+    try {
+      https.get(url, (res) => {
+        res.setEncoding(`binary`)
+        let data = ``
+        res.on(`data`, (chunk) => {
+          data += chunk
+        })
+        res.on(`error`, e => {
+          console.error(`Failed`, e);
+          fetchRes(null)
+        })
+        res.on(`end`, () => {
+          if (`${res.statusCode}`[0] === `3`) {
+            fetchDocument(res.headers.location).then(fetchRes)
+          } else {
+            fetchRes(data)
+          }
+        })
       })
-      res.on(`end`, () => {
-        if (`${res.statusCode}`[0] === `3`) {
-          fetchDocument(res.headers.location).then(fetchRes)
-        } else {
-          fetchRes(data)
-        }
-      })
-    })
+    } catch(e) {
+      console.error(`Failed`, e);
+      fetchRes(null)
+    }
   })
+}
+
+const fetchDocumentWithRetry = async (url) => {
+  let attempts = 10
+
+  while(attempts > 0) {
+    const doc = await fetchDocument(url)
+    console.log(`Got ${doc.length} bytes`)
+    if (doc) {
+      return doc
+    }
+
+    await (new Promise(resolve => {
+      setTimeout(resolve, 1000)
+    }))
+
+    console.log('Retrying fetch...')
+    attempts --;
+  }
+
+  return null
+}
+
 
 const extractContentXmlFromZip = (zipPath, tempPath) =>
   new Promise((resolve, reject) => {
@@ -232,7 +265,10 @@ export async function getTranslations() {
   const tempPath = tmp.dirSync().name
   const odsFile = pathTools.join(tempPath, `source.ods`)
 
-  const odsData = await fetchDocument(url)
+  const odsData = await fetchDocumentWithRetry(url)
+  if (!odsData) {
+    return null
+  }
   writeFileSync(odsFile, odsData, `binary`)
 
   const xmlPath = await extractContentXmlFromZip(odsFile, tempPath)

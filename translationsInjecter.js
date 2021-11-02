@@ -13,6 +13,7 @@ const languages = {
   tr: { rtl: false },
   pl: { rtl: false },
   ru: { rtl: false },
+  ro: { rtl: false },
   uk: { rtl: false },
   th: { rtl: false },
 }
@@ -135,7 +136,7 @@ export default function inject(contents, origTranslations, translationsFile) {
         ret[languageId] = {
           languageId: `en`,
           rtl: false,
-          text: `!!! no translation !!!]`,
+          text: `!!! no translation !!!`,
         }
       })
     } else {
