@@ -135,7 +135,7 @@ export default function inject(contents, origTranslations, translationsFile) {
         ret[languageId] = {
           languageId: `en`,
           rtl: false,
-          text: `!!! no translation !!!]`,
+          text: `!!! no translation !!!`,
         }
       })
     } else {
