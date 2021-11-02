@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { writeFileSync, readFileSync, unlinkSync, realpathSync } from "fs"
-import { exec } from "child_process"
+import { writeFileSync, readFileSync, unlinkSync, realpathSync, existsSync } from "fs"
+import { dirname } from "path"
 
 import {
   getTranslations,
@@ -44,9 +44,25 @@ async function run() {
     return
   }
 
+const ignoreMatch = /(node_modules)/
+
+async function run(translations, target) {
   const allWarnings = []
 
+  let lastFolder = null
+
   for (const file of getJavascriptFiles(target)) {
+    if (ignoreMatch.test(file)) {
+      continue
+    }
+
+    const folder = dirname(file)
+    if (folder != lastFolder) {
+      lastFolder = folder
+      console.log(`Scanning ${folder}...`)
+    }
+
+    // console.log(`Checking ${file}...`)
     const translationsFile = await getTranslationsFile(file)
     const translationsFileRelative = translationsFile.slice(
       file.lastIndexOf(`/`) + 1
@@ -59,11 +75,20 @@ async function run() {
     })
 
     if (contents !== result.output) {
+      console.log(`Writing ${file}...`)
       writeFileSync(file, result.output, `utf-8`)
     }
 
     if (result.hasContent) {
-      writeFileSync(translationsFile, result.translations, `utf-8`)
+      let oldTranslationContent = ``
+      if (existsSync(translationsFile)) {
+        oldTranslationContent = readFileSync(translationsFile, `utf-8`)
+      }
+
+      if (result.translations != oldTranslationContent) {
+        console.log(`Writing ${translationsFile}...`)
+        writeFileSync(translationsFile, result.translations, `utf-8`)
+      }
     } else {
       try {
         unlinkSync(translationsFile)
