@@ -22,18 +22,7 @@ process.on('uncaughtException', function (err) {
 const [_bin, _file, targetRelative] = process.argv
 
 if (!targetRelative) {
-  console.log(process.argv)
   console.error(`Usage: import-translations <directory/file>`)
-  process.exit(2)
-}
-
-const ignoreMatch = /(node_modules)/
-
-let translations
-try {
-  translations = await getTranslations()
-} catch (e) {
-  console.error(`Failed to load translations.`, e)
   process.exit(2)
 }
 
@@ -44,6 +33,27 @@ try {
   console.error(`Bad path: ${targetRelative}`)
   process.exit(3)
 }
+
+let translations
+try {
+  translations = await getTranslations()
+} catch (e) {
+  console.error(`Failed to load translations.`, e)
+  process.exit(2)
+}
+
+if (!translations) {
+  console.error(`Failed to get translation data`)
+  process.exit(3)
+}
+
+let maxkeys = Object.keys(translations).map(lang => Object.keys(translations[lang]).length).reduce((pv, cv) => Math.max(pv, cv), 0)
+let detectedLanguages = Object.keys(translations)
+
+console.log(`Found ${maxkeys} translation keys`)
+console.log(`Found ${detectedLanguages.length} languages: ${detectedLanguages}`)
+
+const ignoreMatch = /(node_modules)/
 
 async function run(translations, target) {
   const allWarnings = []
