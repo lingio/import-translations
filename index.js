@@ -29,6 +29,22 @@ if (!targetRelative) {
 
 const ignoreMatch = /(node_modules)/
 
+let translations
+try {
+  translations = await getTranslations()
+} catch (e) {
+  console.error(`Failed to load translations.`, e)
+  process.exit(2)
+}
+
+let target
+try {
+  target = realpathSync(targetRelative)
+} catch (e) {
+  console.error(`Bad path: ${targetRelative}`)
+  process.exit(3)
+}
+
 async function run(translations, target) {
   const allWarnings = []
 
@@ -45,7 +61,6 @@ async function run(translations, target) {
       console.log(`Scanning ${folder}...`)
     }
 
-    // console.log(`Checking ${file}...`)
     const translationsFile = await getTranslationsFile(file)
     const translationsFileRelative = translationsFile.slice(
       file.lastIndexOf(`/`) + 1
@@ -74,7 +89,9 @@ async function run(translations, target) {
       }
     } else {
       try {
-        unlinkSync(translationsFile)
+        if (existsSync(translationsFile)) {
+          unlinkSync(translationsFile)
+        }
       } catch (e) {
         // ignore issues removing the file
       }
@@ -84,22 +101,6 @@ async function run(translations, target) {
   allWarnings.forEach((w) => {
     console.warn(w)
   })
-}
-
-let translations
-try {
-  translations = await getTranslations()
-} catch (e) {
-  console.error(`Failed to load translations.`, e)
-  process.exit(2)
-}
-
-let target
-try {
-  target = realpathSync(targetRelative)
-} catch (e) {
-  console.error(`Bad path: ${targetRelative}`)
-  process.exit(3)
 }
 
 run(translations, target)
