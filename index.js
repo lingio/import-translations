@@ -27,23 +27,6 @@ if (!targetRelative) {
   process.exit(2)
 }
 
-let target
-try {
-  target = realpathSync(targetRelative)
-} catch (e) {
-  console.error(`Bad path: ${targetRelative}`)
-  process.exit(3)
-}
-
-async function run() {
-  let translations
-  try {
-    translations = await getTranslations()
-  } catch (e) {
-    console.error(`Failed to load translations.`, e)
-    return
-  }
-
 const ignoreMatch = /(node_modules)/
 
 async function run(translations, target) {
@@ -103,4 +86,20 @@ async function run(translations, target) {
   })
 }
 
-run()
+let translations
+try {
+  translations = await getTranslations()
+} catch (e) {
+  console.error(`Failed to load translations.`, e)
+  process.exit(2)
+}
+
+let target
+try {
+  target = realpathSync(targetRelative)
+} catch (e) {
+  console.error(`Bad path: ${targetRelative}`)
+  process.exit(3)
+}
+
+run(translations, target)
