@@ -16,6 +16,7 @@ const languages = {
   ro: { rtl: false },
   uk: { rtl: false },
   th: { rtl: false },
+  bs: { rtl: false },
 }
 
 export default function inject(contents, origTranslations, translationsFile) {
