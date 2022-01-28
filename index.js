@@ -8,7 +8,7 @@ import {
   getJavascriptFiles,
   getTranslationsFile,
 } from "./translationsImporter.js"
-import inject from "./translationsInjecter.js"
+import inject, { getAllTranslations } from "./translationsInjecter.js"
 
 if (!process.env.TRANSLATIONS_URL) {
   console.error(`You must set the TRANSLATIONS_URL environment variable`)
@@ -22,16 +22,8 @@ process.on('uncaughtException', function (err) {
 const [_bin, _file, targetRelative] = process.argv
 
 if (!targetRelative) {
-  console.error(`Usage: import-translations <directory/file>`)
+  console.error(`Usage: import-translations (<directory/file> | --export-json)`)
   process.exit(2)
-}
-
-let target
-try {
-  target = realpathSync(targetRelative)
-} catch (e) {
-  console.error(`Bad path: ${targetRelative}`)
-  process.exit(3)
 }
 
 let translations
@@ -47,11 +39,38 @@ if (!translations) {
   process.exit(3)
 }
 
+let allkeys = Object.keys(translations).map(lang => Object.keys(translations[lang])).reduce((pv, cv) => [...pv, ...cv], [])
 let maxkeys = Object.keys(translations).map(lang => Object.keys(translations[lang]).length).reduce((pv, cv) => Math.max(pv, cv), 0)
 let detectedLanguages = Object.keys(translations)
 
 console.log(`Found ${maxkeys} translation keys`)
 console.log(`Found ${detectedLanguages.length} languages: ${detectedLanguages}`)
+
+if (targetRelative === '--export-json') {
+  const by_language = getAllTranslations(translations)
+
+  const by_key = {}
+  allkeys.forEach(k => {
+    by_key[k] = {}
+    detectedLanguages.forEach(l => {
+      by_key[k][l] = by_language[l][k]
+    })
+  })
+
+  const json = JSON.stringify({by_language, by_key}, null, 2)
+  writeFileSync('all-translations.json', json, 'UTF-8')
+  console.log('Wrote all-translations.json')
+
+  process.exit(0)
+}
+
+let target
+try {
+  target = realpathSync(targetRelative)
+} catch (e) {
+  console.error(`Bad path: ${targetRelative}`)
+  process.exit(3)
+}
 
 const ignoreMatch = /(node_modules)/
 
