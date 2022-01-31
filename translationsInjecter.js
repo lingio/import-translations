@@ -19,6 +19,40 @@ const languages = {
   bs: { rtl: false },
 }
 
+export function getAllTranslations(origTranslations) {
+  const warnings = []
+  const languageIds = Object.keys(origTranslations)
+
+  const proxies = []
+  const translations = {}
+  languageIds.forEach((id) => (translations[id] = {}))
+
+  // insert rtl information
+  for (const key of Object.keys(origTranslations.en)) {
+    for (const languageId of languageIds) {
+      const text = origTranslations[languageId][key] || ``
+      const match = text.match(/^use\(([a-zA-Z-]+)\)$/)
+
+      if (match) {
+        proxies.push([languageId, key, match[1]])
+      } else {
+        translations[languageId][key] = {
+          text,
+          rtl: languages[languageId].rtl,
+          languageId,
+        }
+      }
+    }
+  }
+
+  // Proxy use(...) statements
+  proxies.forEach(([languageId, key, toLanguageId]) => {
+    translations[languageId][key] = translations[toLanguageId][key]
+  })
+
+  return translations
+}
+
 export default function inject(contents, origTranslations, translationsFile) {
   const warnings = []
   const languageIds = Object.keys(origTranslations)
