@@ -22,7 +22,7 @@ process.on('uncaughtException', function (err) {
 const [_bin, _file, targetRelative] = process.argv
 
 if (!targetRelative) {
-  console.error(`Usage: import-translations (<directory/file> | --export-json)`)
+  console.error(`Usage: import-translations (<directory/file> | --export-all)`)
   process.exit(2)
 }
 
@@ -46,8 +46,18 @@ let detectedLanguages = Object.keys(translations)
 console.log(`Found ${maxkeys} translation keys`)
 console.log(`Found ${detectedLanguages.length} languages: ${detectedLanguages}`)
 
-if (targetRelative === '--export-json') {
+if (targetRelative === '--export-all') {
   const by_language = getAllTranslations(translations)
+
+  Object.keys(by_language).map(li => {
+    const lang = by_language[li];
+    Object.keys(lang).map(ki => {
+      const key = lang[ki]
+      console.log('key', key)
+
+      lang[ki] = key.text
+    })
+  })
 
   const by_key = {}
   allkeys.forEach(k => {
@@ -57,9 +67,16 @@ if (targetRelative === '--export-json') {
     })
   })
 
-  const json = JSON.stringify({by_language, by_key}, null, 2)
+  const timestamp = (new Date()).toISOString()
+  const comment = `Auto generated ${timestamp}`
+
+  const json = JSON.stringify({comment, by_language, by_key}, null, 2)
   writeFileSync('all-translations.json', json, 'UTF-8')
   console.log('Wrote all-translations.json')
+
+  const js = `// ${comment}\n\nexport const languages = ${JSON.stringify(by_language, null, 2)}\n\nexport const keys = ${JSON.stringify(by_key, null, 2)}\n\n`
+  writeFileSync('all-translations.js', js, 'UTF-8')
+  console.log('Wrote all-translations.js')
 
   process.exit(0)
 }
