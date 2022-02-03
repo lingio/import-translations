@@ -126,7 +126,7 @@ export default function inject(contents, origTranslations, translationsFile) {
     }
   }
 
-  const callsRegex = /translations\.([a-z][a-zA-Z]*)(\.([^.(]+)|\[[^\]]+\])/gm
+  const callsRegex = /translations\.([a-zA-Z_]+)(\.([^.(]+)|\[[^\]]+\])/gm
 
   const keys = new Set()
 
