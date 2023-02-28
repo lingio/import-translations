@@ -18,6 +18,7 @@ const languages = {
   th: { rtl: false },
   bs: { rtl: false },
   vi: { rtl: false },
+  ckb: { rtl: false },
 }
 
 export function getAllTranslations(origTranslations) {
